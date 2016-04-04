@@ -3,61 +3,27 @@ package gocanvas
 import (
 	"fmt"
 	"image"
-	"image/color"
 	"image/draw"
 	_ "image/png"
 	"log"
-	"math/rand"
 	"os"
 	"runtime"
 	"strings"
-	"time"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 	"github.com/go-gl/glfw/v3.1/glfw"
 )
 
-const size = 512
-const windowWidth = size
-const windowHeight = size
+type cbRender func() *image.RGBA
 
-// frameReady = false
-
-// ********************************************************************
-func FrameReady() {
-	// frameReady = true
-}
-
-// ********************************************************************
-func Render() *image.RGBA {
-
-	rgba, _ := RGBAFromImage("image.png")
-
-	for i := 0; i < 200000; i++ {
-
-		x := rand.Intn(size)
-		y := rand.Intn(size)
-
-		r := uint8(rand.Intn(255))
-		g := uint8(rand.Intn(255))
-		b := uint8(rand.Intn(255))
-
-		rgba.Set(x, y, color.RGBA{r, g, b, 255})
-	}
-
-	return rgba
-}
-
-// ********************************************************************
 func init() {
-	// GLFW event handling must run on the main OS thread
 	runtime.LockOSThread()
 }
 
-// ********************************************************************
-func Run() {
-
-	rand.Seed(time.Now().UTC().UnixNano())
+// Init initializes OpenGL/GLFW then runs a render callback on each iteration of
+// the library's Render Loop. Allows render function to be defined externally
+// inside a user's application.
+func Init(windowWidth int, windowHeight int, render cbRender) {
 
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("failed to initialize glfw:", err)
@@ -75,7 +41,6 @@ func Run() {
 	}
 	window.MakeContextCurrent()
 
-	// Initialize Glow
 	if err = gl.Init(); err != nil {
 		panic(err)
 	}
@@ -83,7 +48,6 @@ func Run() {
 	version := gl.GoStr(gl.GetString(gl.VERSION))
 	fmt.Println("OpenGL version", version)
 
-	// Configure the vertex and fragment shaders
 	program, err := newProgram(vertexShader, fragmentShader)
 	if err != nil {
 		panic(err)
@@ -96,9 +60,7 @@ func Run() {
 
 	gl.BindFragDataLocation(program, 0, gl.Str("outputColor\x00"))
 
-	// Load the texture
-	// img, _ := getRGBAFromImage("image.png")
-	texture, err := NewTexture(Render())
+	texture, err := newTexture(render())
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -111,7 +73,7 @@ func Run() {
 	var vbo uint32
 	gl.GenBuffers(1, &vbo)
 	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-	gl.BufferData(gl.ARRAY_BUFFER, len(cubeVertices)*4, gl.Ptr(cubeVertices), gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, len(screenVertices)*4, gl.Ptr(screenVertices), gl.STATIC_DRAW)
 
 	stride := int32(8)
 	vertAttrib := uint32(gl.GetAttribLocation(program, gl.Str("vert\x00")))
@@ -124,12 +86,12 @@ func Run() {
 	gl.ClearColor(1.0, 1.0, 1.0, 1.0)
 
 	for !window.ShouldClose() {
-		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
+		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 		gl.UseProgram(program)
 		gl.BindVertexArray(vao)
 
-		texture, err = NewTexture(Render())
+		texture, err = newTexture(render())
 
 		if err != nil {
 			log.Fatalln(err)
@@ -142,10 +104,10 @@ func Run() {
 
 		window.SwapBuffers()
 		glfw.PollEvents()
+
 	}
 }
 
-// ********************************************************************
 func newProgram(vertexShaderSource, fragmentShaderSource string) (uint32, error) {
 
 	vertexShader, err := compileShader(vertexShaderSource, gl.VERTEX_SHADER)
@@ -182,7 +144,6 @@ func newProgram(vertexShaderSource, fragmentShaderSource string) (uint32, error)
 	return program, nil
 }
 
-// ********************************************************************
 func compileShader(source string, shaderType uint32) (uint32, error) {
 
 	shader := gl.CreateShader(shaderType)
@@ -207,13 +168,12 @@ func compileShader(source string, shaderType uint32) (uint32, error) {
 	return shader, nil
 }
 
-// ********************************************************************
+// RGBAFromImage returns an RGBA pointer from a .png file
 func RGBAFromImage(filename string) (*image.RGBA, error) {
 
 	file := filename
 	imgFile, err := os.Open(file)
 	if err != nil {
-		// return 0, fmt.Errorf("texture %q not found on disk: %v", file, err)
 		return nil, fmt.Errorf("texture %q not found on disk: %v", file, err)
 	}
 	img, _, err := image.Decode(imgFile)
@@ -230,8 +190,7 @@ func RGBAFromImage(filename string) (*image.RGBA, error) {
 	return rgba, err
 }
 
-// ********************************************************************
-func NewTexture(rgba *image.RGBA) (uint32, error) {
+func newTexture(rgba *image.RGBA) (uint32, error) {
 
 	var texture uint32
 	gl.GenTextures(1, &texture)
@@ -255,8 +214,7 @@ func NewTexture(rgba *image.RGBA) (uint32, error) {
 	return texture, nil
 }
 
-// ********************************************************************
-var cubeVertices = []float32{
+var screenVertices = []float32{
 	//  X, Y,
 	-1.0, -1.0,
 	1.0, -1.0,
@@ -266,7 +224,6 @@ var cubeVertices = []float32{
 	-1.0, 1.0,
 }
 
-// ********************************************************************
 var vertexShader = `
 #version 330
 in vec2 vert;
