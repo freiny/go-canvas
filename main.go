@@ -27,6 +27,26 @@ const windowWidth = size
 const windowHeight = size
 
 // ********************************************************************
+func render() *image.RGBA {
+
+	rgba, _ := rgbaFromImage("image.png")
+
+	for i := 0; i < 200000; i++ {
+
+		x := rand.Intn(size)
+		y := rand.Intn(size)
+
+		r := uint8(rand.Intn(255))
+		g := uint8(rand.Intn(255))
+		b := uint8(rand.Intn(255))
+
+		rgba.Set(x, y, color.RGBA{r, g, b, 255})
+	}
+
+	return rgba
+}
+
+// ********************************************************************
 func init() {
 	// GLFW event handling must run on the main OS thread
 	runtime.LockOSThread()
@@ -75,8 +95,8 @@ func main() {
 	gl.BindFragDataLocation(program, 0, gl.Str("outputColor\x00"))
 
 	// Load the texture
-	img, _ := getRGBAFromImage("image.png")
-	texture, err := newTexture(img)
+	// img, _ := getRGBAFromImage("image.png")
+	texture, err := newTexture(render())
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -99,24 +119,15 @@ func main() {
 	gl.EnableVertexAttribArray(texCoordAttrib)
 	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, stride, gl.PtrOffset(0))
 
-	// Configure global settings
-	gl.Enable(gl.DEPTH_TEST)
-	gl.DepthFunc(gl.LESS)
 	gl.ClearColor(1.0, 1.0, 1.0, 1.0)
 
 	for !window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 
-		// Render
 		gl.UseProgram(program)
-
 		gl.BindVertexArray(vao)
 
-		// Load the texture
-		rgbaFile, _ := getRGBAFromImage("image.png")
-		rgba := randomizeRGBA(rgbaFile)
-		texture, err = newTexture(rgba)
-		// texture, err = newTexture(rgbaFile)
+		texture, err = newTexture(render())
 
 		if err != nil {
 			log.Fatalln(err)
@@ -127,7 +138,6 @@ func main() {
 
 		gl.DrawArrays(gl.TRIANGLES, 0, 2*3)
 
-		// Maintenance
 		window.SwapBuffers()
 		glfw.PollEvents()
 	}
@@ -196,7 +206,7 @@ func compileShader(source string, shaderType uint32) (uint32, error) {
 }
 
 // ********************************************************************
-func getRGBAFromImage(filename string) (*image.RGBA, error) {
+func rgbaFromImage(filename string) (*image.RGBA, error) {
 
 	file := filename
 	imgFile, err := os.Open(file)
@@ -216,37 +226,6 @@ func getRGBAFromImage(filename string) (*image.RGBA, error) {
 
 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
 	return rgba, err
-}
-
-// ********************************************************************
-func randomizeRGBA(rgba *image.RGBA) *image.RGBA {
-
-	size := 512
-	// blue := color.RGBA{0, 0, 255, 255}
-	// draw.Draw(rgba, rgba.Bounds(), &image.Uniform{blue}, image.ZP, draw.Src)
-
-	for i := 0; i < 200000; i++ {
-
-		x := rand.Intn(size)
-		y := rand.Intn(size)
-
-		r := uint8(rand.Intn(255))
-		g := uint8(rand.Intn(255))
-		b := uint8(rand.Intn(255))
-
-		rgba.Set(x, y, color.RGBA{r, g, b, 255})
-	}
-
-	// for x := 0; x < size; x++ {
-	// 	for y := 0; y < size; y++ {
-	// 		r := uint8(rand.Intn(255))
-	// 		g := uint8(rand.Intn(255))
-	// 		b := uint8(rand.Intn(255))
-	// 		rgba.Set(x, y, color.RGBA{r, g, b, 255})
-	// 	}
-	// }
-
-	return rgba
 }
 
 // ********************************************************************
@@ -275,7 +254,17 @@ func newTexture(rgba *image.RGBA) (uint32, error) {
 }
 
 // ********************************************************************
+var cubeVertices = []float32{
+	//  X, Y,
+	-1.0, -1.0,
+	1.0, -1.0,
+	-1.0, 1.0,
+	1.0, -1.0,
+	1.0, 1.0,
+	-1.0, 1.0,
+}
 
+// ********************************************************************
 var vertexShader = `
 #version 330
 in vec2 vert;
@@ -296,21 +285,3 @@ void main() {
     outputColor = texture(tex, fragTexCoord);
 }
 ` + "\x00"
-
-var cubeVertices = []float32{
-	//  X, Y, Z, U, V
-	// Front
-	-1.0, -1.0, //0.0, 1.0, 0.0,
-	1.0, -1.0, //0.0, 0.0, 0.0,
-	-1.0, 1.0, //0.0, 1.0, 1.0,
-	1.0, -1.0, //0.0, 0.0, 0.0,
-	1.0, 1.0, //0.0, 0.0, 1.0,
-	-1.0, 1.0, //0.0, 1.0, 1.0,
-
-	// -1.0, -1.0, 1.0, 1.0, 0.0,
-	// 1.0, -1.0, 1.0, 0.0, 0.0,
-	// -1.0, 1.0, 1.0, 1.0, 1.0,
-	// 1.0, -1.0, 1.0, 0.0, 0.0,
-	// 1.0, 1.0, 1.0, 0.0, 1.0,
-	// -1.0, 1.0, 1.0, 1.0, 1.0,
-}
