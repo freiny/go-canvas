@@ -1,9 +1,4 @@
-// Copyright 2014 The go-gl Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
-// Renders a textured spinning cube using GLFW 3.1 and OpenGL 4.1 core forward-compatible profile.
-package main
+package gocanvas
 
 import (
 	"fmt"
@@ -26,10 +21,17 @@ const size = 512
 const windowWidth = size
 const windowHeight = size
 
-// ********************************************************************
-func render() *image.RGBA {
+// frameReady = false
 
-	rgba, _ := rgbaFromImage("image.png")
+// ********************************************************************
+func FrameReady() {
+	// frameReady = true
+}
+
+// ********************************************************************
+func Render() *image.RGBA {
+
+	rgba, _ := RGBAFromImage("image.png")
 
 	for i := 0; i < 200000; i++ {
 
@@ -53,7 +55,7 @@ func init() {
 }
 
 // ********************************************************************
-func main() {
+func Run() {
 
 	rand.Seed(time.Now().UTC().UnixNano())
 
@@ -96,7 +98,7 @@ func main() {
 
 	// Load the texture
 	// img, _ := getRGBAFromImage("image.png")
-	texture, err := newTexture(render())
+	texture, err := NewTexture(Render())
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -127,7 +129,7 @@ func main() {
 		gl.UseProgram(program)
 		gl.BindVertexArray(vao)
 
-		texture, err = newTexture(render())
+		texture, err = NewTexture(Render())
 
 		if err != nil {
 			log.Fatalln(err)
@@ -206,7 +208,7 @@ func compileShader(source string, shaderType uint32) (uint32, error) {
 }
 
 // ********************************************************************
-func rgbaFromImage(filename string) (*image.RGBA, error) {
+func RGBAFromImage(filename string) (*image.RGBA, error) {
 
 	file := filename
 	imgFile, err := os.Open(file)
@@ -229,7 +231,7 @@ func rgbaFromImage(filename string) (*image.RGBA, error) {
 }
 
 // ********************************************************************
-func newTexture(rgba *image.RGBA) (uint32, error) {
+func NewTexture(rgba *image.RGBA) (uint32, error) {
 
 	var texture uint32
 	gl.GenTextures(1, &texture)
