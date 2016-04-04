@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"image"
 	"image/draw"
-	_ "image/png"
 	"log"
 	"os"
 	"runtime"
