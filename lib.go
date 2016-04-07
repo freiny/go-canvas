@@ -16,6 +16,17 @@ import (
 
 type cbRender func() *image.RGBA
 
+func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
+	if action == 1 {
+		fmt.Print("key down: ", string(key))
+
+	}
+
+	if action == 0 {
+		fmt.Print("key up: ", string(key))
+	}
+}
+
 func init() {
 	runtime.LockOSThread()
 }
@@ -86,6 +97,9 @@ func Init(windowWidth int, windowHeight int, render cbRender) {
 	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, stride, gl.PtrOffset(0))
 
 	gl.ClearColor(1.0, 1.0, 1.0, 1.0)
+
+	window.SetKeyCallback(onKey)
+	window.SetCursorPos(0.0, 0.0)
 
 	var xPrev, yPrev, xCurr, yCurr float64
 
