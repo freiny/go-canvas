@@ -36,14 +36,15 @@ func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods 
 	}
 }
 
-var x, y float64
+var xCursor, yCursor float64
 
 func onCursorMove(xPos float64, yPos float64) {
-	x, y = xPos, yPos
-	fmt.Println("CURSOR: ", x, y)
+	xCursor, yCursor = xPos, yPos
+	fmt.Println("CURSOR: ", xCursor, yCursor)
 }
 
 func render() *image.RGBA {
+	xCur, yCur := int(xCursor), int(yCursor)
 
 	rgba := image.NewRGBA(image.Rect(0, 0, width, height))
 
@@ -55,9 +56,16 @@ func render() *image.RGBA {
 		r := uint8(rand.Intn(255))
 		g := uint8(rand.Intn(255))
 		b := uint8(rand.Intn(255))
-		//
+
 		rgba.Set(x, y, color.RGBA{r, g, b, 255})
 	}
+
+	for x := 0; x < 20; x++ {
+		for y := 0; y < 20; y++ {
+			rgba.Set(xCur+x, height-yCur+y, color.RGBA{255, 0, 0, 255})
+		}
+	}
+
 	return rgba
 
 }
