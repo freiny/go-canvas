@@ -5,7 +5,6 @@ import (
 	"image"
 	"image/draw"
 	"log"
-	"math"
 	"os"
 	"runtime"
 	"strings"
@@ -15,17 +14,7 @@ import (
 )
 
 type cbRender func() *image.RGBA
-
-func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
-	if action == 1 {
-		fmt.Print("key down: ", string(key))
-
-	}
-
-	if action == 0 {
-		fmt.Print("key up: ", string(key))
-	}
-}
+type cbCursorMove func(float64, float64)
 
 func init() {
 	runtime.LockOSThread()
@@ -34,7 +23,7 @@ func init() {
 // Init initializes OpenGL/GLFW then runs a render callback on each iteration of
 // the library's Render Loop. Allows render function to be defined externally
 // inside a user's application.
-func Init(windowWidth int, windowHeight int, render cbRender) {
+func Init(windowWidth int, windowHeight int, render cbRender, onKey glfw.KeyCallback, onCursorMove cbCursorMove) {
 
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("failed to initialize glfw:", err)
@@ -107,8 +96,8 @@ func Init(windowWidth int, windowHeight int, render cbRender) {
 
 		xCurr, yCurr = window.GetCursorPos()
 		if xCurr != xPrev || yCurr != yPrev {
-			fmt.Print("[", math.Floor(xCurr), math.Floor(yCurr), "] ")
 			xPrev, yPrev = xCurr, yCurr
+			onCursorMove(xCurr, yCurr)
 		}
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)

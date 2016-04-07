@@ -7,12 +7,14 @@ Render images and pixel data to the screen with Go/Golang
 package main
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"math/rand"
 	"time"
 
 	gc "github.com/freiny/go-canvas"
+	"github.com/go-gl/glfw/v3.1/glfw"
 )
 
 const width = 512
@@ -20,7 +22,25 @@ const height = 512
 
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
-	gc.Init(width, height, render)
+	gc.Init(width, height, render, onKey, onCursorMove)
+}
+
+func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
+	if action == 1 {
+		fmt.Print(string(key), " DOWN")
+
+	}
+
+	if action == 0 {
+		fmt.Print(string(key), " UP")
+	}
+}
+
+var x, y float64
+
+func onCursorMove(xPos float64, yPos float64) {
+	x, y = xPos, yPos
+	fmt.Println("CURSOR: ", x, y)
 }
 
 func render() *image.RGBA {
