@@ -22,7 +22,7 @@ const height = 512
 
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
-	gc.Init(width, height, render, onKey, onCursorMove)
+	gc.Init(width, height, onRender, onKey, onCursorMove)
 }
 
 func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
@@ -43,7 +43,7 @@ func onCursorMove(xPos float64, yPos float64) {
 	fmt.Println("CURSOR: ", xCursor, yCursor)
 }
 
-func render() *image.RGBA {
+func onRender() *image.RGBA {
 	xCur, yCur := int(xCursor), int(yCursor)
 
 	rgba := image.NewRGBA(image.Rect(0, 0, width, height))

@@ -23,7 +23,7 @@ func init() {
 // Init initializes OpenGL/GLFW then runs a render callback on each iteration of
 // the library's Render Loop. Allows render function to be defined externally
 // inside a user's application.
-func Init(windowWidth int, windowHeight int, render cbRender, onKey glfw.KeyCallback, onCursorMove cbCursorMove) {
+func Init(windowWidth int, windowHeight int, onRender cbRender, onKey glfw.KeyCallback, onCursorMove cbCursorMove) {
 
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("failed to initialize glfw:", err)
@@ -62,7 +62,7 @@ func Init(windowWidth int, windowHeight int, render cbRender, onKey glfw.KeyCall
 
 	gl.BindFragDataLocation(program, 0, gl.Str("outputColor\x00"))
 
-	texture, err := newTexture(render())
+	texture, err := newTexture(onRender())
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -104,7 +104,7 @@ func Init(windowWidth int, windowHeight int, render cbRender, onKey glfw.KeyCall
 		gl.UseProgram(program)
 		gl.BindVertexArray(vao)
 
-		texture, err = newTexture(render())
+		texture, err = newTexture(onRender())
 
 		if err != nil {
 			log.Fatalln(err)
