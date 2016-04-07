@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/draw"
 	"log"
+	"math"
 	"os"
 	"runtime"
 	"strings"
@@ -39,6 +40,8 @@ func Init(windowWidth int, windowHeight int, render cbRender) {
 		panic(err)
 	}
 	window.MakeContextCurrent()
+
+	window.SetPos(760, 0)
 
 	if err = gl.Init(); err != nil {
 		panic(err)
@@ -84,7 +87,15 @@ func Init(windowWidth int, windowHeight int, render cbRender) {
 
 	gl.ClearColor(1.0, 1.0, 1.0, 1.0)
 
+	var xPrev, yPrev, xCurr, yCurr float64
+
 	for !window.ShouldClose() {
+
+		xCurr, yCurr = window.GetCursorPos()
+		if xCurr != xPrev || yCurr != yPrev {
+			fmt.Print("[", math.Floor(xCurr), math.Floor(yCurr), "] ")
+			xPrev, yPrev = xCurr, yCurr
+		}
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 		gl.UseProgram(program)
