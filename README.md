@@ -2,7 +2,7 @@
 
 A multi-platform library for easy access to window and input in Go/Golang
 
-### Using go-window
+### Usage
 
 <pre><code>
 package main
