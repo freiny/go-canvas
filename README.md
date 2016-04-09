@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	_ "image/png"
 	"math/rand"
 	"time"
 
@@ -17,12 +18,21 @@ import (
 	"github.com/go-gl/glfw/v3.1/glfw"
 )
 
-const width = 512
-const height = 512
+var config = gc.Config{}
+var cb = gc.Callbacks{}
 
 func main() {
+	config.Width = 512
+	config.Height = 512
+	config.X = 0
+	config.Y = 0
+
+	cb.Render = onRender
+	cb.Key = onKey
+	cb.CursorMove = onCursorMove
+
 	rand.Seed(time.Now().UTC().UnixNano())
-	gc.Init(width, height, onRender, onKey, onCursorMove)
+	gc.Init(config, cb)
 }
 
 func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
@@ -40,18 +50,18 @@ var xCursor, yCursor float64
 
 func onCursorMove(xPos float64, yPos float64) {
 	xCursor, yCursor = xPos, yPos
-	fmt.Println("CURSOR: ", xCursor, yCursor)
+	// fmt.Println("CURSOR: ", xCursor, yCursor)
 }
 
 func onRender() *image.RGBA {
 	xCur, yCur := int(xCursor), int(yCursor)
 
-	rgba := image.NewRGBA(image.Rect(0, 0, width, height))
+	rgba := image.NewRGBA(image.Rect(0, 0, config.Width, config.Height))
 
-	for i := 0; i < 200000; i++ {
+	for i := 0; i < 9000; i++ {
 
-		x := rand.Intn(width)
-		y := rand.Intn(height)
+		x := rand.Intn(config.Width)
+		y := rand.Intn(config.Height)
 
 		r := uint8(rand.Intn(255))
 		g := uint8(rand.Intn(255))
@@ -60,9 +70,10 @@ func onRender() *image.RGBA {
 		rgba.Set(x, y, color.RGBA{r, g, b, 255})
 	}
 
-	for x := 0; x < 20; x++ {
-		for y := 0; y < 20; y++ {
-			rgba.Set(xCur+x, height-yCur+y, color.RGBA{255, 0, 0, 255})
+	var d = 20
+	for x := 0; x < d; x++ {
+		for y := 0; y < d; y++ {
+			rgba.Set(xCur+x-d, config.Height-yCur+y-d, color.RGBA{255, 0, 0, 255})
 		}
 	}
 
