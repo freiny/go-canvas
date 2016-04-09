@@ -1,7 +1,8 @@
-# go-canvas
-Render images and pixel data to the screen with Go/Golang
+# go-window
 
-### Using go-canvas
+A multi-platform library for easy access to window and input in Go/Golang
+
+### Using go-window
 
 <pre><code>
 package main
