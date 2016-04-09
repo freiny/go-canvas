@@ -16,6 +16,19 @@ import (
 type cbRender func() *image.RGBA
 type cbCursorMove func(float64, float64)
 
+type Callbacks struct {
+	Render     cbRender
+	CursorMove cbCursorMove
+	Key        glfw.KeyCallback
+}
+
+type Config struct {
+	Width  int
+	Height int
+	X      int
+	Y      int
+}
+
 func init() {
 	runtime.LockOSThread()
 }
@@ -23,7 +36,7 @@ func init() {
 // Init initializes OpenGL/GLFW then runs a render callback on each iteration of
 // the library's Render Loop. Allows render function to be defined externally
 // inside a user's application.
-func Init(windowWidth int, windowHeight int, onRender cbRender, onKey glfw.KeyCallback, onCursorMove cbCursorMove) {
+func Init(config Config, cb Callbacks) {
 
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("failed to initialize glfw:", err)
@@ -35,13 +48,13 @@ func Init(windowWidth int, windowHeight int, onRender cbRender, onKey glfw.KeyCa
 	glfw.WindowHint(glfw.ContextVersionMinor, 1)
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-	window, err := glfw.CreateWindow(windowWidth, windowHeight, "", nil, nil)
+	window, err := glfw.CreateWindow(config.Width, config.Height, "", nil, nil)
 	if err != nil {
 		panic(err)
 	}
 	window.MakeContextCurrent()
 
-	window.SetPos(760, 0)
+	window.SetPos(config.X, config.Y)
 
 	if err = gl.Init(); err != nil {
 		panic(err)
@@ -62,7 +75,7 @@ func Init(windowWidth int, windowHeight int, onRender cbRender, onKey glfw.KeyCa
 
 	gl.BindFragDataLocation(program, 0, gl.Str("outputColor\x00"))
 
-	texture, err := newTexture(onRender())
+	texture, err := newTexture(cb.Render())
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -87,7 +100,7 @@ func Init(windowWidth int, windowHeight int, onRender cbRender, onKey glfw.KeyCa
 
 	gl.ClearColor(1.0, 1.0, 1.0, 1.0)
 
-	window.SetKeyCallback(onKey)
+	window.SetKeyCallback(cb.Key)
 	window.SetCursorPos(0.0, 0.0)
 
 	var xPrev, yPrev, xCurr, yCurr float64
@@ -97,14 +110,14 @@ func Init(windowWidth int, windowHeight int, onRender cbRender, onKey glfw.KeyCa
 		xCurr, yCurr = window.GetCursorPos()
 		if xCurr != xPrev || yCurr != yPrev {
 			xPrev, yPrev = xCurr, yCurr
-			onCursorMove(xCurr, yCurr)
+			cb.CursorMove(xCurr, yCurr)
 		}
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 		gl.UseProgram(program)
 		gl.BindVertexArray(vao)
 
-		texture, err = newTexture(onRender())
+		texture, err = newTexture(cb.Render())
 
 		if err != nil {
 			log.Fatalln(err)
