@@ -15,12 +15,12 @@ import (
 	"math/rand"
 	"time"
 
-	gc "github.com/freiny/go-canvas"
+	gw "github.com/freiny/go-window"
 	"github.com/go-gl/glfw/v3.1/glfw"
 )
 
-var config = gc.Config{}
-var cb = gc.Callbacks{}
+var config = gw.Config{}
+var cb = gw.Callbacks{}
 
 func main() {
 	config.Width = 512
@@ -33,7 +33,7 @@ func main() {
 	cb.CursorMove = onCursorMove
 
 	rand.Seed(time.Now().UTC().UnixNano())
-	gc.Init(config, cb)
+	gw.Init(config, cb)
 }
 
 func onKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
