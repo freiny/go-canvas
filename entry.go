@@ -13,13 +13,17 @@ import (
 type cbRender func() *image.RGBA
 type cbCursorMove func(float64, float64)
 type cbKey func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey)
+type cbFPS func(fps int)
 
+// Callbacks holds the callbacks defined in the User Application  ran in the library
 type Callbacks struct {
 	Render     cbRender
 	CursorMove cbCursorMove
 	Key        glfw.KeyCallback
+	FPS        cbFPS
 }
 
+// Config holds global data (e.g. window dimensions, cursor location)
 type Config struct {
 	Width  int
 	Height int
@@ -27,6 +31,7 @@ type Config struct {
 	Y      int
 }
 
+// Action hides the glfw from the User
 type Action glfw.Action
 
 // var onKey func()
@@ -111,8 +116,24 @@ func Init(config Config, cb Callbacks) {
 	window.SetCursorPos(0.0, 0.0)
 
 	var xPrev, yPrev, xCurr, yCurr float64
+	var tPrev, tCurr, tDelta int64
+	var fps int
 
 	for !window.ShouldClose() {
+		if debug {
+
+			tCurr = GetTime()
+			tDelta = tCurr - tPrev
+			if tDelta > 1000000000 {
+				cb.FPS(fps)
+				tPrev = tCurr
+				fps = 0
+
+			} else {
+				fps++
+			}
+
+		}
 
 		xCurr, yCurr = window.GetCursorPos()
 		if xCurr != xPrev || yCurr != yPrev {
