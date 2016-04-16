@@ -3,12 +3,68 @@ package gowindow
 import (
 	"fmt"
 	"image"
+	"image/color"
 	"image/draw"
+	"math/rand"
 	"os"
 )
 
-// RGBAFromImage returns an RGBA pointer from a .png file
-func RGBAFromImage(filename string) (*image.RGBA, error) {
+// ClearImage clears input image.RGBA to specified color
+func ClearImage(rgba *image.RGBA, c color.RGBA) *image.RGBA {
+	point := rgba.Bounds().Size()
+	w := point.X
+	h := point.Y
+
+	for x := 0; x < w; x++ {
+		for y := 0; y < h; y++ {
+			rgba.Set(x, y, c)
+		}
+	}
+
+	return rgba
+}
+
+// RandomImage clears input image.RGBA to specified color
+func RandomImage(p image.Point) *image.RGBA {
+
+	w, h := p.X, p.Y
+	rgba := image.NewRGBA(image.Rect(0, 0, w, h))
+
+	// rgba := image.NewRGBA(image.Rect(0, 0, cfg.Width, cfg.Height))
+	//
+	// for i := 0; i < 90000; i++ {
+	//
+	// 	x := rand.Intn(cfg.Width)
+	// 	y := rand.Intn(cfg.Height)
+	//
+	// 	r := uint8(rand.Intn(255))
+	// 	g := uint8(rand.Intn(255))
+	// 	b := uint8(rand.Intn(255))
+	//
+	// 	rgba.Set(x, y, color.RGBA{r, g, b, 255})
+	// }
+	//
+
+	for x := 0; x < w; x++ {
+		for y := 0; y < h; y++ {
+			r := uint8(rand.Intn(255))
+			g := uint8(rand.Intn(255))
+			b := uint8(rand.Intn(255))
+			rgba.Set(x, y, color.RGBA{r, g, b, 255})
+		}
+	}
+	return rgba
+}
+
+// var d = 20
+// for x := 0; x < d; x++ {
+// 	for y := 0; y < d; y++ {
+// 		rgba.Set(xCur+x-d, cfg.Height-yCur+y-d, color.RGBA{255, 0, 0, 255})
+// 	}
+// }
+
+// GetImage returns an RGBA pointer from a .png file
+func GetImage(filename string) (*image.RGBA, error) {
 
 	file := filename
 	imgFile, err := os.Open(file)
