@@ -24,26 +24,35 @@ func ClearImage(rgba *image.RGBA, c color.RGBA) *image.RGBA {
 	return rgba
 }
 
+// GetImagePart returns an RGBA pointer from a partial .png file
+func GetImagePart(filename string, point image.Point) (*image.RGBA, error) {
+
+	file := filename
+	imgFile, err := os.Open(file)
+	if err != nil {
+		return nil, fmt.Errorf("texture %q not found on disk: %v", file, err)
+	}
+
+	img, _, err := image.Decode(imgFile)
+	if err != nil {
+		return nil, err
+	}
+
+	// rgba := image.NewRGBA(img.Bounds())
+	rgba := image.NewRGBA(image.Rect(0, 0, point.X, point.Y))
+	if rgba.Stride != rgba.Rect.Size().X*4 {
+		return nil, fmt.Errorf("unsupported stride")
+	}
+
+	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
+	return rgba, err
+}
+
 // RandomImage clears input image.RGBA to specified color
 func RandomImage(p image.Point) *image.RGBA {
 
 	w, h := p.X, p.Y
 	rgba := image.NewRGBA(image.Rect(0, 0, w, h))
-
-	// rgba := image.NewRGBA(image.Rect(0, 0, cfg.Width, cfg.Height))
-	//
-	// for i := 0; i < 90000; i++ {
-	//
-	// 	x := rand.Intn(cfg.Width)
-	// 	y := rand.Intn(cfg.Height)
-	//
-	// 	r := uint8(rand.Intn(255))
-	// 	g := uint8(rand.Intn(255))
-	// 	b := uint8(rand.Intn(255))
-	//
-	// 	rgba.Set(x, y, color.RGBA{r, g, b, 255})
-	// }
-	//
 
 	for x := 0; x < w; x++ {
 		for y := 0; y < h; y++ {
