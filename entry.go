@@ -12,16 +12,20 @@ import (
 
 type cbRender func() *image.RGBA
 type cbCursorMove func(float64, float64)
-type cbKey func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey)
+
+// type cbKeyGLFW func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey)
+type cbKey func(w *Window)
 type cbFPS func(fps int)
 
 // Callbacks holds the callbacks defined in the User Application  ran in the library
 type Callbacks struct {
 	Render     cbRender
 	CursorMove cbCursorMove
-	Key        glfw.KeyCallback
+	Key        cbKey
 	FPS        cbFPS
 }
+
+var cb = Callbacks{}
 
 // Config holds global data (e.g. window dimensions, cursor location)
 type Config struct {
@@ -33,6 +37,11 @@ type Config struct {
 
 // Action hides the glfw from the User
 type Action glfw.Action
+
+// Window wraps glfw window
+type Window struct {
+	glfw.Window
+}
 
 // var onKey func()
 // func cbKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
@@ -48,7 +57,8 @@ func init() {
 // Init initializes OpenGL/GLFW then runs a render callback on each iteration of
 // the library's Render Loop. Allows render function to be defined externally
 // inside a user's application.
-func Init(config Config, cb Callbacks) {
+func Init(config Config, cbUserDefined Callbacks) {
+	cb = cbUserDefined
 
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("failed to initialize glfw:", err)
@@ -112,7 +122,13 @@ func Init(config Config, cb Callbacks) {
 
 	gl.ClearColor(1.0, 1.0, 1.0, 1.0)
 
-	window.SetKeyCallback(cb.Key)
+	window.SetKeyCallback(func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
+		// var x *GWWindow = &w
+		x := Window{*w}
+		// fmt.Println(x)
+		cb.Key(&x)
+	})
+
 	window.SetCursorPos(0.0, 0.0)
 
 	var xPrev, yPrev, xCurr, yCurr float64
