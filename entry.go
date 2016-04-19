@@ -2,7 +2,6 @@ package gowindow
 
 import (
 	"fmt"
-	"image"
 	"log"
 	"runtime"
 
@@ -10,65 +9,15 @@ import (
 	"github.com/go-gl/glfw/v3.1/glfw"
 )
 
-type cbRender func() *image.RGBA
-type cbCursorMove func(float64, float64)
-
-type cbKey func(w *Window, k Key, scancode int, action Action, mods ModifierKey)
-type cbFPS func(fps int)
-
-// Callbacks holds the callbacks defined in the User Application  ran in the library
-type Callbacks struct {
-	Render     cbRender
-	CursorMove cbCursorMove
-	Key        cbKey
-	FPS        cbFPS
-}
-
+var wc = WinConfig{}
 var cb = Callbacks{}
-
-// Config holds global data (e.g. window dimensions, cursor location)
-type Config struct {
-	Width  int
-	Height int
-	X      int
-	Y      int
-}
-
-// Window wraps glfw.Window
-type Window struct {
-	glfw.Window
-}
-
-// Key replaces glfw.Key
-type Key int
-
-// Action replaces glfw.Action
-type Action int
-
-// ModifierKey replaces glfw.ModifierKey
-type ModifierKey int
-
-// window.SetKeyCallback(func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
-// 	// x := Window{*w}
-// 	// cb.Key(&x)
-// 	cb.Key(&Window{*w}, key Key)
-// })
-
-// var onKey func()
-// func cbKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
-// 	fmt.Println(w, key, scancode, action, mods)
-// 	onKey()
-// }
-// w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey
 
 func init() {
 	runtime.LockOSThread()
 }
 
-// Init initializes OpenGL/GLFW then runs a render callback on each iteration of
-// the library's Render Loop. Allows render function to be defined externally
-// inside a user's application.
-func Init(config Config, cbUserDefined Callbacks) {
+// Init initializes OpenGL/GLFW then runs a render callback on each iteration
+func Init(wc WinConfig, cbUserDefined Callbacks) {
 	cb = cbUserDefined
 
 	if err := glfw.Init(); err != nil {
@@ -81,13 +30,13 @@ func Init(config Config, cbUserDefined Callbacks) {
 	glfw.WindowHint(glfw.ContextVersionMinor, 1)
 	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
 	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-	window, err := glfw.CreateWindow(config.Width, config.Height, "", nil, nil)
+	window, err := glfw.CreateWindow(wc.W, wc.H, "", nil, nil)
 	if err != nil {
 		panic(err)
 	}
 	window.MakeContextCurrent()
 
-	window.SetPos(config.X, config.Y)
+	window.SetPos(wc.X, wc.Y)
 
 	if err = gl.Init(); err != nil {
 		panic(err)
