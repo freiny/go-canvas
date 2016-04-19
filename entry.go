@@ -13,8 +13,7 @@ import (
 type cbRender func() *image.RGBA
 type cbCursorMove func(float64, float64)
 
-// type cbKeyGLFW func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey)
-type cbKey func(w *Window)
+type cbKey func(w *Window, k Key, scancode int, action Action, mods ModifierKey)
 type cbFPS func(fps int)
 
 // Callbacks holds the callbacks defined in the User Application  ran in the library
@@ -35,13 +34,25 @@ type Config struct {
 	Y      int
 }
 
-// Action hides the glfw from the User
-type Action glfw.Action
-
-// Window wraps glfw window
+// Window wraps glfw.Window
 type Window struct {
 	glfw.Window
 }
+
+// Key replaces glfw.Key
+type Key int
+
+// Action replaces glfw.Action
+type Action int
+
+// ModifierKey replaces glfw.ModifierKey
+type ModifierKey int
+
+// window.SetKeyCallback(func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
+// 	// x := Window{*w}
+// 	// cb.Key(&x)
+// 	cb.Key(&Window{*w}, key Key)
+// })
 
 // var onKey func()
 // func cbKey(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
@@ -123,10 +134,9 @@ func Init(config Config, cbUserDefined Callbacks) {
 	gl.ClearColor(1.0, 1.0, 1.0, 1.0)
 
 	window.SetKeyCallback(func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
-		// var x *GWWindow = &w
-		x := Window{*w}
-		// fmt.Println(x)
-		cb.Key(&x)
+		// x := Window{*w}
+		// cb.Key(&x)
+		cb.Key(&Window{*w}, Key(key), scancode, Action(action), ModifierKey(mods))
 	})
 
 	window.SetCursorPos(0.0, 0.0)
