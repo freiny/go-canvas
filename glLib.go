@@ -64,6 +64,7 @@ func initGL() {
 
 	gl.ClearColor(1.0, 1.0, 1.0, 1.0)
 
+	// persist the gl variables needed by renderGL()
 	glConfig.program = program
 	glConfig.vao = vao
 	glConfig.texture = texture

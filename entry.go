@@ -18,6 +18,19 @@ func init() {
 func Init(wc WinConfig, cbUserDefined Callbacks) {
 	cb = cbUserDefined
 
+	if cb.Render == nil {
+		cb.Render = onRenderNil
+	}
+	if cb.CursorMove == nil {
+		cb.CursorMove = onCursorMoveNil
+	}
+	if cb.Key == nil {
+		cb.Key = onKeyNil
+	}
+	if cb.FPS == nil {
+		cb.FPS = onFPSNil
+	}
+
 	if err := glfw.Init(); err != nil {
 		log.Fatalln("failed to initialize glfw:", err)
 	}
@@ -66,8 +79,7 @@ func Init(wc WinConfig, cbUserDefined Callbacks) {
 
 		cursorCurr.X, cursorCurr.Y = window.GetCursorPos()
 		if cursorCurr.X != cursorPrev.X || cursorCurr.Y != cursorPrev.Y {
-			cursorPrev = cursorCurr
-			// xPrev, yPrev = xCurr, yCurr
+			cursorPrev = cursorCurr // xPrev, yPrev = xCurr, yCurr
 			cb.CursorMove(cursorCurr)
 		}
 

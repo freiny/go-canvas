@@ -9,6 +9,11 @@ import (
 	"os"
 )
 
+// BlankImage returns a blank RGBA image
+func BlankImage() *image.RGBA {
+	return image.NewRGBA(image.Rect(0, 0, 1, 1))
+}
+
 // ClearImage clears input image.RGBA to specified color
 func ClearImage(rgba *image.RGBA, c color.RGBA) *image.RGBA {
 	point := rgba.Bounds().Size()

@@ -19,6 +19,11 @@ type Callbacks struct {
 	FPS        cbFPS
 }
 
+func onRenderNil() *image.RGBA                                          { return BlankImage() }
+func onCursorMoveNil(c Cursor)                                          {}
+func onKeyNil(w *Window, k Key, scancode int, a Action, mk ModifierKey) {}
+func onFPSNil(fps int)                                                  {}
+
 // WinConfig holds global data (e.g. window dimensions, cursor location)
 type WinConfig struct {
 	W int
