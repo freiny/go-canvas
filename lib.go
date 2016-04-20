@@ -2,7 +2,6 @@ package gowindow
 
 import (
 	"image"
-	"time"
 
 	"github.com/go-gl/glfw/v3.1/glfw"
 )
@@ -41,19 +40,3 @@ type Action int
 
 // ModifierKey replaces glfw.ModifierKey
 type ModifierKey int
-
-// SetDebug turn debugging mode on or off
-func SetDebug() {
-	debug = true
-}
-
-// Toggle alternates between returning true and false each frame
-func Toggle() bool {
-	frameToggle = !frameToggle
-	return frameToggle
-}
-
-// GetTime returns current time in nano seconds
-func GetTime() int64 {
-	return time.Now().UTC().UnixNano()
-}
