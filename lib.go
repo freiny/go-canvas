@@ -7,8 +7,8 @@ import (
 )
 
 type cbRender func() *image.RGBA
-type cbCursorMove func(float64, float64)
-type cbKey func(w *Window, k Key, scancode int, action Action, mods ModifierKey)
+type cbCursorMove func(c Cursor)
+type cbKey func(w *Window, k Key, scancode int, a Action, mk ModifierKey)
 type cbFPS func(fps int)
 
 // Callbacks holds the callbacks defined in the User Application  ran in the library

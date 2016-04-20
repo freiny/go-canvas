@@ -3,10 +3,90 @@ package gowindow
 import (
 	"fmt"
 	"image"
+	"log"
 	"strings"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
 )
+
+// GLConfig variables needed to persist to renderGL()
+type GLConfig struct {
+	program uint32
+	vao     uint32
+	texture uint32
+}
+
+var glConfig = GLConfig{}
+
+func initGL() {
+
+	if err := gl.Init(); err != nil {
+		panic(err)
+	}
+
+	version := gl.GoStr(gl.GetString(gl.VERSION))
+	fmt.Println("OpenGL version", version)
+
+	program, err := newProgram(vertexShader, fragmentShader)
+	if err != nil {
+		panic(err)
+	}
+
+	gl.UseProgram(program)
+
+	textureUniform := gl.GetUniformLocation(program, gl.Str("tex\x00"))
+	gl.Uniform1i(textureUniform, 0)
+
+	gl.BindFragDataLocation(program, 0, gl.Str("outputColor\x00"))
+
+	texture, err := newTexture(cb.Render())
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	// Configure the vertex data
+	var vao uint32
+	gl.GenVertexArrays(1, &vao)
+	gl.BindVertexArray(vao)
+
+	var vbo uint32
+	gl.GenBuffers(1, &vbo)
+	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, len(screenVertices)*4, gl.Ptr(screenVertices), gl.STATIC_DRAW)
+
+	stride := int32(8)
+	vertAttrib := uint32(gl.GetAttribLocation(program, gl.Str("vert\x00")))
+	gl.EnableVertexAttribArray(vertAttrib)
+	gl.VertexAttribPointer(vertAttrib, 3, gl.FLOAT, false, stride, gl.PtrOffset(0))
+	texCoordAttrib := uint32(gl.GetAttribLocation(program, gl.Str("vertTexCoord\x00")))
+	gl.EnableVertexAttribArray(texCoordAttrib)
+	gl.VertexAttribPointer(texCoordAttrib, 2, gl.FLOAT, false, stride, gl.PtrOffset(0))
+
+	gl.ClearColor(1.0, 1.0, 1.0, 1.0)
+
+	glConfig.program = program
+	glConfig.vao = vao
+	glConfig.texture = texture
+}
+
+func renderGL() {
+	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+	gl.UseProgram(glConfig.program)
+	gl.BindVertexArray(glConfig.vao)
+
+	var err error
+	glConfig.texture, err = newTexture(cb.Render())
+
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, glConfig.texture)
+
+	gl.DrawArrays(gl.TRIANGLES, 0, 2*3)
+
+}
 
 func newProgram(vertexShaderSource, fragmentShaderSource string) (uint32, error) {
 
