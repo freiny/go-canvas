@@ -55,23 +55,11 @@ func Init(wc WinConfig) {
 	window.SetCursorPos(0.0, 0.0)
 
 	var cursorPrev, cursorCurr Cursor
-	var tPrev, tCurr, tDelta int64
-	var fps int
+	fps := GetFPS()
 
 	for !window.ShouldClose() {
 		if debug {
-
-			tCurr = GetTime()
-			tDelta = tCurr - tPrev
-			if tDelta > 1000000000 {
-				cb.FPS(fps)
-				tPrev = tCurr
-				fps = 0
-
-			} else {
-				fps++
-			}
-
+			fps()
 		}
 
 		cursorCurr.X, cursorCurr.Y = window.GetCursorPos()
