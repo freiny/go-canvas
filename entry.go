@@ -7,16 +7,13 @@ import (
 	"github.com/go-gl/glfw/v3.1/glfw"
 )
 
-var wc = WinConfig{}
-var cb = Callbacks{}
-
 func init() {
 	runtime.LockOSThread()
 }
 
 // Init initializes OpenGL/GLFW then runs a render callback on each iteration
-func Init(wc WinConfig, cbUserDefined Callbacks) {
-	cb = cbUserDefined
+// func Init(wc WinConfig, cbUserDefined Callbacks) {
+func Init(wc WinConfig) {
 
 	if cb.Render == nil {
 		cb.Render = onRenderNil

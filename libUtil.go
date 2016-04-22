@@ -25,4 +25,5 @@ func SetFrameToggle() bool {
 // GetTime returns current time in nano seconds
 func GetTime() int64 {
 	return time.Now().UTC().UnixNano()
+
 }
