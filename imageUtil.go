@@ -5,6 +5,7 @@ import (
 	"image"
 	"image/color"
 	"image/draw"
+	"log"
 	"math/rand"
 	"os"
 )
@@ -30,27 +31,31 @@ func (f Framework) ClearImage(rgba *image.RGBA, c color.RGBA) *image.RGBA {
 }
 
 // GetImagePart returns an RGBA pointer from a partial .png file
-func (f Framework) GetImagePart(filename string, point image.Point) (*image.RGBA, error) {
+func (f Framework) GetImagePart(filename string, point image.Point) *image.RGBA {
 
 	file := filename
 	imgFile, err := os.Open(file)
 	if err != nil {
-		return nil, fmt.Errorf("texture %q not found on disk: %v", file, err)
+		log.Fatal(fmt.Errorf("file %q not found on disk: %v", file, err))
+		return nil
 	}
 
 	img, _, err := image.Decode(imgFile)
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
+		// log.Fatal(fmt.Errorf("error decoding file %q: %v", imgFile, err))
+		return nil
 	}
 
 	// rgba := image.NewRGBA(img.Bounds())
 	rgba := image.NewRGBA(image.Rect(0, 0, point.X, point.Y))
 	if rgba.Stride != rgba.Rect.Size().X*4 {
-		return nil, fmt.Errorf("unsupported stride")
+		log.Fatal(fmt.Errorf("unsupported stride"))
+		return nil
 	}
 
 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
-	return rgba, err
+	return rgba
 }
 
 // RandomImage clears input image.RGBA to specified color
@@ -78,23 +83,26 @@ func (f Framework) RandomImage(p image.Point) *image.RGBA {
 // }
 
 // GetImage returns an RGBA pointer from a .png file
-func (f Framework) GetImage(filename string) (*image.RGBA, error) {
+func (f Framework) GetImage(filename string) *image.RGBA {
 
 	file := filename
 	imgFile, err := os.Open(file)
 	if err != nil {
-		return nil, fmt.Errorf("texture %q not found on disk: %v", file, err)
+		log.Fatal(fmt.Errorf("texture %q not found on disk: %v", file, err))
+		return nil
 	}
 	img, _, err := image.Decode(imgFile)
 	if err != nil {
-		return nil, err
+		log.Fatal(fmt.Errorf("error decoding file %q: %v", imgFile, err))
+		return nil
 	}
 
 	rgba := image.NewRGBA(img.Bounds())
 	if rgba.Stride != rgba.Rect.Size().X*4 {
-		return nil, fmt.Errorf("unsupported stride")
+		log.Fatal("unsupported stride")
+		return nil
 	}
 
 	draw.Draw(rgba, rgba.Bounds(), img, image.Point{0, 0}, draw.Src)
-	return rgba, err
+	return rgba
 }

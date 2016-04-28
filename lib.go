@@ -17,16 +17,42 @@ func init() {
 // Framework object
 type Framework struct {
 	x, y, w, h int
+	buildMode  string
 	*glfw.Window
 	cb Callbacks
 }
 
 // Config stores window x,y position and width,height for when framework is started
-func (f *Framework) Config(x int, y int, w int, h int) {
-	f.x = x
-	f.y = y
-	f.w = w
-	f.h = h
+func Config(x int, y int, w int, h int) Framework {
+	return Framework{x: x, y: y, w: w, h: h, buildMode: "Development"}
+}
+
+// SetBuildMode sets Production or Development build
+func (f *Framework) SetBuildMode(mode string) {
+	switch mode {
+	case "Development":
+		f.buildMode = mode
+	case "Production":
+		f.buildMode = mode
+	default:
+		log.Fatal("unknown build mode")
+	}
+}
+
+// GetBuildMode sets Production or Development build
+func (f *Framework) GetBuildMode() string {
+	return f.buildMode
+}
+
+// GetResourcePath gets path where resources are stored
+func (f *Framework) GetResourcePath() string {
+	var path string
+	if f.GetBuildMode() == "Production" {
+		path = "/Applications/gwApp.app/Contents/Resources/"
+	} else {
+		path = "Resources/"
+	}
+	return path
 }
 
 // Start initializes OpenGL/GLFW then runs a render callback on each iteration
@@ -133,10 +159,6 @@ func (f *Framework) RegisterCallback(cbHandler interface{}) {
 		f.cb.FPS(1234)
 	}
 }
-
-var wc = WinConfig{}
-
-// var cb = Callbacks{}
 
 // WinConfig holds global data (e.g. window dimensions, cursor location)
 type WinConfig struct {
