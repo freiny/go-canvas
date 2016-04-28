@@ -3,13 +3,140 @@ package gowindow
 import (
 	"fmt"
 	"image"
+	"log"
 	"reflect"
+	"runtime"
 
 	"github.com/go-gl/glfw/v3.1/glfw"
 )
 
+func init() {
+	runtime.LockOSThread()
+}
+
+// Framework object
+type Framework struct {
+	x, y, w, h int
+	*glfw.Window
+	cb Callbacks
+}
+
+// Config stores window x,y position and width,height for when framework is started
+func (f *Framework) Config(x int, y int, w int, h int) {
+	f.x = x
+	f.y = y
+	f.w = w
+	f.h = h
+}
+
+// Start initializes OpenGL/GLFW then runs a render callback on each iteration
+// func Init(wc WinConfig, cbUserDefined Callbacks) {
+func (f *Framework) Start() {
+	dbg.Log("lib.go", "Framework.Init()")
+	if f.cb.Render == nil {
+		dbg.Log("lib.go", "Framework.Init()", "cb.Render == nil")
+		f.cb.Render = onRenderNil
+	}
+	if f.cb.CursorMove == nil {
+		dbg.Log("lib.go", "Framework.Init()", "cb.CursorMove == nil")
+		f.cb.CursorMove = onCursorMoveNil
+	}
+	if f.cb.Key == nil {
+		dbg.Log("lib.go", "Framework.Init()", "cb.Key == nil")
+		f.cb.Key = onKeyNil
+	}
+	if f.cb.FPS == nil {
+		dbg.Log("lib.go", "Framework.Init()", "cb.FPS == nil")
+		f.cb.FPS = onFPSNil
+	}
+
+	if err := glfw.Init(); err != nil {
+		log.Fatalln("failed to initialize glfw:", err)
+	}
+	defer glfw.Terminate()
+
+	glfw.WindowHint(glfw.Resizable, glfw.False)
+	glfw.WindowHint(glfw.ContextVersionMajor, 4)
+	glfw.WindowHint(glfw.ContextVersionMinor, 1)
+	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
+	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
+	window, err := glfw.CreateWindow(f.w, f.h, "", nil, nil)
+	if err != nil {
+		panic(err)
+	}
+	window.MakeContextCurrent()
+
+	window.SetPos(f.x, f.y)
+
+	f.initGL()
+
+	window.SetKeyCallback(func(w *glfw.Window, key glfw.Key, scancode int, action glfw.Action, mods glfw.ModifierKey) {
+		f.cb.Key(&Window{*w}, Key(key), scancode, Action(action), ModifierKey(mods))
+	})
+
+	window.SetCursorPos(0.0, 0.0)
+	// win := Window{window}
+	f.Window = window
+
+	var cursorPrev, cursorCurr Cursor
+	fps := GetFPS()
+
+	for !window.ShouldClose() {
+		if dbg.Profiling() {
+			fps()
+		}
+
+		cursorCurr.X, cursorCurr.Y = window.GetCursorPos()
+		if cursorCurr.X != cursorPrev.X || cursorCurr.Y != cursorPrev.Y {
+			cursorPrev = cursorCurr // xPrev, yPrev = xCurr, yCurr
+			f.cb.CursorMove(cursorCurr)
+		}
+
+		f.renderGL()
+
+		window.SwapBuffers()
+		glfw.PollEvents()
+
+	}
+
+}
+
+// RegisterCallback allows setting user defined callbacks
+func (f *Framework) RegisterCallback(cbHandler interface{}) {
+	dbg.Log("lib.go", "Framework.RegisterCallback()")
+	// f := Callbacks{}
+
+	this := reflect.TypeOf(cbHandler)
+	render := reflect.TypeOf(f.cb.Render)
+	cursorMove := reflect.TypeOf(f.cb.CursorMove)
+	key := reflect.TypeOf(f.cb.Key)
+	fps := reflect.TypeOf(f.cb.FPS)
+
+	if this == render {
+		fmt.Println("render")
+		f.cb.Render, _ = cbHandler.(func() *image.RGBA)
+	}
+
+	if this == cursorMove {
+		fmt.Println("cursor")
+		f.cb.CursorMove = cbHandler.(func(c Cursor))
+	}
+
+	if this == key {
+		fmt.Println("key")
+		f.cb.Key = cbHandler.(func(w *Window, k Key, scancode int, a Action, mk ModifierKey))
+	}
+
+	if this == fps {
+		fmt.Println("fps")
+		f.cb.FPS = cbHandler.(func(fps int))
+		f.cb.FPS(1234)
+	}
+}
+
 var wc = WinConfig{}
-var cb = Callbacks{}
+
+// var cb = Callbacks{}
 
 // WinConfig holds global data (e.g. window dimensions, cursor location)
 type WinConfig struct {
@@ -41,38 +168,19 @@ type Callbacks struct {
 	FPS        func(fps int)
 }
 
-func onRenderNil() *image.RGBA                                          { return BlankImage() }
-func onCursorMoveNil(c Cursor)                                          {}
-func onKeyNil(w *Window, k Key, scancode int, a Action, mk ModifierKey) {}
-func onFPSNil(fps int)                                                  {}
+func onRenderNil() *image.RGBA {
+	dbg.Log("lib.go", "onRenderNil()")
+	return BlankImage()
+}
+func onCursorMoveNil(c Cursor) {
+	dbg.Log("lib.go", "onCursorMoveNil")
 
-// RegisterCallback allows setting user defined callbacks
-func RegisterCallback(cbName string, cbHandler interface{}) {
-	f := Callbacks{}
+}
+func onKeyNil(w *Window, k Key, scancode int, a Action, mk ModifierKey) {
+	dbg.Log("lib.go", "onKeyNil")
 
-	this := reflect.TypeOf(cbHandler)
-	render := reflect.TypeOf(f.Render)
-	cursorMove := reflect.TypeOf(f.CursorMove)
-	key := reflect.TypeOf(f.Key)
-	fps := reflect.TypeOf(f.FPS)
+}
+func onFPSNil(fps int) {
+	dbg.Log("lib.go", "onFPSNil")
 
-	if this == render {
-		fmt.Println("render")
-		cb.Render, _ = cbHandler.(func() *image.RGBA)
-	}
-
-	if this == cursorMove {
-		fmt.Println("cursor")
-		cb.CursorMove = cbHandler.(func(c Cursor))
-	}
-
-	if this == key {
-		fmt.Println("key")
-		cb.Key = cbHandler.(func(w *Window, k Key, scancode int, a Action, mk ModifierKey))
-	}
-
-	if this == fps {
-		fmt.Println("fps")
-		cb.FPS = cbHandler.(func(fps int))
-	}
 }

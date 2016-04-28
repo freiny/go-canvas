@@ -18,7 +18,7 @@ type GLConfig struct {
 
 var glConfig = GLConfig{}
 
-func initGL() {
+func (f *Framework) initGL() {
 
 	if err := gl.Init(); err != nil {
 		panic(err)
@@ -39,7 +39,7 @@ func initGL() {
 
 	gl.BindFragDataLocation(program, 0, gl.Str("outputColor\x00"))
 
-	texture, err := newTexture(cb.Render())
+	texture, err := newTexture(f.cb.Render())
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -70,13 +70,13 @@ func initGL() {
 	glConfig.texture = texture
 }
 
-func renderGL() {
+func (f *Framework) renderGL() {
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 	gl.UseProgram(glConfig.program)
 	gl.BindVertexArray(glConfig.vao)
 
 	var err error
-	glConfig.texture, err = newTexture(cb.Render())
+	glConfig.texture, err = newTexture(f.cb.Render())
 
 	if err != nil {
 		log.Fatalln(err)

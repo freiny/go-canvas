@@ -15,7 +15,7 @@ func BlankImage() *image.RGBA {
 }
 
 // ClearImage clears input image.RGBA to specified color
-func ClearImage(rgba *image.RGBA, c color.RGBA) *image.RGBA {
+func (f Framework) ClearImage(rgba *image.RGBA, c color.RGBA) *image.RGBA {
 	point := rgba.Bounds().Size()
 	w := point.X
 	h := point.Y
@@ -30,7 +30,7 @@ func ClearImage(rgba *image.RGBA, c color.RGBA) *image.RGBA {
 }
 
 // GetImagePart returns an RGBA pointer from a partial .png file
-func GetImagePart(filename string, point image.Point) (*image.RGBA, error) {
+func (f Framework) GetImagePart(filename string, point image.Point) (*image.RGBA, error) {
 
 	file := filename
 	imgFile, err := os.Open(file)
@@ -54,7 +54,7 @@ func GetImagePart(filename string, point image.Point) (*image.RGBA, error) {
 }
 
 // RandomImage clears input image.RGBA to specified color
-func RandomImage(p image.Point) *image.RGBA {
+func (f Framework) RandomImage(p image.Point) *image.RGBA {
 
 	w, h := p.X, p.Y
 	rgba := image.NewRGBA(image.Rect(0, 0, w, h))
@@ -78,7 +78,7 @@ func RandomImage(p image.Point) *image.RGBA {
 // }
 
 // GetImage returns an RGBA pointer from a .png file
-func GetImage(filename string) (*image.RGBA, error) {
+func (f Framework) GetImage(filename string) (*image.RGBA, error) {
 
 	file := filename
 	imgFile, err := os.Open(file)
