@@ -82,8 +82,8 @@ func (f Framework) RandomImage(p image.Point) *image.RGBA {
 // 	}
 // }
 
-// GetImage returns an RGBA pointer from a .png file
-func (f Framework) GetImage(filename string) *image.RGBA {
+// LoadImage returns an RGBA pointer from a .png file
+func (f Framework) LoadImage(filename string) *image.RGBA {
 
 	file := filename
 	imgFile, err := os.Open(file)

@@ -27,27 +27,32 @@ func Config(x int, y int, w int, h int) Framework {
 	return Framework{x: x, y: y, w: w, h: h, buildMode: "Development"}
 }
 
-// SetBuildMode sets Production or Development build
-func (f *Framework) SetBuildMode(mode string) {
-	switch mode {
+// BuildMode sets Production or Development build
+func (f *Framework) BuildMode(mode ...string) string {
+	// get
+	if mode == nil {
+		return f.buildMode
+	}
+
+	// set
+	switch mode[0] {
 	case "Development":
-		f.buildMode = mode
+		f.buildMode = mode[0]
 	case "Production":
-		f.buildMode = mode
+		f.buildMode = mode[0]
 	default:
 		log.Fatal("unknown build mode")
 	}
+	return ""
+
 }
 
 // GetBuildMode sets Production or Development build
-func (f *Framework) GetBuildMode() string {
-	return f.buildMode
-}
 
-// GetResourcePath gets path where resources are stored
-func (f *Framework) GetResourcePath() string {
+// ResourcePath gets path where resources are stored
+func (f *Framework) ResourcePath() string {
 	var path string
-	if f.GetBuildMode() == "Production" {
+	if f.BuildMode() == "Production" {
 		path = "/Applications/gwApp.app/Contents/Resources/"
 	} else {
 		path = "Resources/"
